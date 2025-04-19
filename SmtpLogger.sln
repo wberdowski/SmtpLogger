@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35919.96
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmtpLogger", "SmtpLogger\SmtpLogger.csproj", "{7C3C98E2-BF0C-4156-80A8-35BF6C6B32F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmtpLogger.Sample", "SmtpLogger.Sample\SmtpLogger.Sample.csproj", "{4BA0DEE0-1281-4FCE-A907-F73E4A4471CC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7C3C98E2-BF0C-4156-80A8-35BF6C6B32F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C3C98E2-BF0C-4156-80A8-35BF6C6B32F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C3C98E2-BF0C-4156-80A8-35BF6C6B32F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C3C98E2-BF0C-4156-80A8-35BF6C6B32F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BA0DEE0-1281-4FCE-A907-F73E4A4471CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BA0DEE0-1281-4FCE-A907-F73E4A4471CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BA0DEE0-1281-4FCE-A907-F73E4A4471CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BA0DEE0-1281-4FCE-A907-F73E4A4471CC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {561CF3DD-946F-4445-A96F-A182431B49E6}
+	EndGlobalSection
+EndGlobal
