@@ -12,7 +12,7 @@ builder.Logging.AddSmtpLogger();
 var app = builder.Build();
 
 // Use the logger
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
+var logger = app.Services.GetRequiredService<ILogger<System.Security.Cryptography.X509Certificates.CertificateRequest>>();
 
 try
 {
@@ -20,8 +20,11 @@ try
 }
 catch (Exception ex)
 {
-    logger.LogCritical(ex, "A test CRITICAL exception Id={Id}", Guid.NewGuid());
-    logger.LogError(ex, "A test exception Id={Id}", Guid.NewGuid());
+    logger.LogCritical(ex, "A test CRITICAL exception Id={Id}", 1);
+    logger.LogError(ex, "A test exception Id={Id}", 2);
+    logger.LogWarning(ex, "A test warning exception Id={Id}", 3);
+    logger.LogDebug(ex, "A test debug exception Id={Id}", 4);
+    logger.LogTrace(ex, "A test trace exception Id={Id}", 5);
 }
 
 app.Run();

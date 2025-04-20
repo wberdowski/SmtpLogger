@@ -11,26 +11,35 @@ namespace SmtpLogger.Formatters
         {
             var accentColor = logEntry.LogLevel switch
             {
-                LogLevel.Critical => "#d50000",
-                LogLevel.Error => "#a32921",
-                LogLevel.Warning => "#735308",
-                LogLevel.Information => "#06677d",
-                LogLevel.Debug => "#474747",
+                LogLevel.Critical => "#ff2121",
+                LogLevel.Error => "#ff2121",
+                LogLevel.Warning => "#ffbd21",
+                LogLevel.Information => "#3baf43",
+                LogLevel.Debug => "#21c4ff",
                 LogLevel.Trace => "#474747",
                 _ => "#474747"
             };
 
-            textWriter.WriteLine("<div>");
-            textWriter.WriteLine($"<span style=\"display: inline-block; height: 2rem; width: 0.5rem; background-color: {accentColor}; vertical-align: middle;\"></span>");
-            textWriter.WriteLine($"<span style=\"font-family: sans-serif; padding: 0.5rem;\">{logEntry.Formatter(logEntry.State, logEntry.Exception)}</span>");
-            textWriter.WriteLine("</div>");
+            textWriter.WriteLine("<table style=\"width: 100%;\">");
+            textWriter.WriteLine("<tr>");
+            textWriter.WriteLine($"<td style=\"width: 0.125rem; background-color: {accentColor}; vertical-align: middle;\"></td>");
+            textWriter.WriteLine($"<td style=\"padding: 0.25rem; font-family: sans-serif; font-weight: bold; background-color: #eee;\">" +
+                $"<div style=\"padding: 0.25rem;\"><small>{logEntry.Category}</small></div>" +
+                $"<div style=\"padding: 0.25rem;\">{logEntry.Formatter(logEntry.State, logEntry.Exception)}</div>" +
+            $"</td>");
+            textWriter.WriteLine("</tr>");
 
             if (logEntry.Exception != null)
             {
-                textWriter.WriteLine($"<pre style=\"border: 1px solid {accentColor}; padding: 1rem;\">");
-                textWriter.WriteLine(logEntry.Exception.ToString());
-                textWriter.WriteLine("</pre>");
+                textWriter.WriteLine("<tr>");
+                textWriter.WriteLine($"<td style=\"background-color: {accentColor}; vertical-align: middle;\"></td>");
+                textWriter.WriteLine($"<td style=\"padding: 0.5rem; font-family: sans-serif; font-size: 0.825rem;\">" +
+                    $"<pre>{logEntry.Exception.ToString()}</pre>" +
+                    $"</td>");
+                textWriter.WriteLine("</tr>");
             }
+
+            textWriter.WriteLine("</table>");
         }
         public void Dispose()
         {
