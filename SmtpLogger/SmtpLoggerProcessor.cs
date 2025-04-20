@@ -11,7 +11,6 @@ namespace SmtpLogger
     {
         private readonly SmtpLoggerOptions _options;
         private readonly Queue<LogMessageEntry> _messageQueue;
-        private volatile int _messagesDropped;
         private bool _isAddingCompleted;
         private int _maxQueuedMessages = SmtpLoggerOptions.DefaultMaxQueueLengthValue;
         public int MaxQueueLength
@@ -38,7 +37,7 @@ namespace SmtpLogger
             _options = options;
             _messageQueue = new Queue<LogMessageEntry>();
             MaxQueueLength = options.MaxQueueLength ?? SmtpLoggerOptions.DefaultMaxQueueLengthValue;
-            // Start Console message queue processor
+
             _outputThread = new Thread(ProcessLogQueue)
             {
                 IsBackground = true,
@@ -47,14 +46,16 @@ namespace SmtpLogger
             _outputThread.Start();
         }
 
-        // internal for testing
         internal void WriteMessage(SmtpClient client, LogMessageEntry entry)
         {
             try
             {
                 var subject = $"[{entry.LogLevel}] {entry.CategoryName}";
                 var body = entry.Message;
-                var mail = new MailMessage(_options.From, _options.To, subject, body);
+                var mail = new MailMessage(_options.From, _options.To, subject, body)
+                {
+                    IsBodyHtml = true
+                };
 
                 client.Send(mail);
             }
@@ -93,15 +94,10 @@ namespace SmtpLogger
                     Debug.Assert(_messageQueue.Count < MaxQueueLength);
                     bool startedEmpty = _messageQueue.Count == 0;
 
-                    // if we just logged the dropped message warning this could push the queue size to
-                    // MaxLength + 1, that shouldn't be a problem. It won't grow any further until it is less than
-                    // MaxLength once again.
                     _messageQueue.Enqueue(item);
 
-                    // if the queue started empty it could be at 1 or 2 now
                     if (startedEmpty)
                     {
-                        // pulse for wait in Dequeue
                         Monitor.PulseAll(_messageQueue);
                     }
 
@@ -126,7 +122,6 @@ namespace SmtpLogger
                     item = _messageQueue.Dequeue();
                     if (_messageQueue.Count == MaxQueueLength - 1)
                     {
-                        // pulse for wait in Enqueue
                         Monitor.PulseAll(_messageQueue);
                     }
 
@@ -144,7 +139,7 @@ namespace SmtpLogger
 
             try
             {
-                _outputThread.Join(1500); // with timeout in-case Console is locked by user input
+                _outputThread.Join(1500);
             }
             catch (ThreadStateException) { }
         }

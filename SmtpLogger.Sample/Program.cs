@@ -20,7 +20,8 @@ try
 }
 catch (Exception ex)
 {
-    logger.LogError(ex, "An error occurred while processing your request.");
+    logger.LogCritical(ex, "A test CRITICAL exception Id={Id}", Guid.NewGuid());
+    logger.LogError(ex, "A test exception Id={Id}", Guid.NewGuid());
 }
 
 app.Run();
