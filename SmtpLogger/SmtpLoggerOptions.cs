@@ -10,6 +10,7 @@
         public string To { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
+        public string? ServiceName { get; set; } = null;
         public bool EnableSsl { get; set; }
     }
 

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Mail;
 using System.Threading;
@@ -50,7 +52,10 @@ namespace SmtpLogger
         {
             try
             {
-                var subject = $"[{entry.LogLevel}] {entry.CategoryName}";
+                var parts = new string?[] { _options.ServiceName, entry.CategoryName }
+                    .Where(x => x != null);
+
+                var subject = $"[{entry.LogLevel}] {string.Join(" - ", parts)}".Trim();
                 var body = entry.Message;
                 var mail = new MailMessage(_options.From, _options.To, subject, body)
                 {
