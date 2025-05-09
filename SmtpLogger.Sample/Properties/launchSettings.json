@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SmtpLogger.Sample": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

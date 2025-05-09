@@ -1,0 +1,6 @@
+services:
+  smtplogger.sample:
+    image: ${DOCKER_REGISTRY-}smtploggersample
+    build:
+      context: .
+      dockerfile: SmtpLogger.Sample/Dockerfile
