@@ -1,11 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using System;
 using System.IO;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Xml.Linq;
 
 namespace SmtpLogger
 {

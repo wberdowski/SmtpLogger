@@ -1,10 +1,9 @@
-﻿using System;
+﻿using MailKit.Net.Smtp;
+using MimeKit;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Net;
-using System.Net.Mail;
 using System.Threading;
 
 namespace SmtpLogger
@@ -40,12 +39,19 @@ namespace SmtpLogger
             _messageQueue = new Queue<LogMessageEntry>();
             MaxQueueLength = options.MaxQueueLength ?? SmtpLoggerOptions.DefaultMaxQueueLengthValue;
 
-            _outputThread = new Thread(ProcessLogQueue)
+            try
             {
-                IsBackground = true,
-                Name = "Smtp logger queue processing thread"
-            };
-            _outputThread.Start();
+                _outputThread = new Thread(ProcessLogQueue)
+                {
+                    IsBackground = true,
+                    Name = "Smtp logger queue processing thread"
+                };
+                _outputThread.Start();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error starting SMTP logger thread: {ex.Message}");
+            }
         }
 
         internal void WriteMessage(SmtpClient client, LogMessageEntry entry)
@@ -55,12 +61,17 @@ namespace SmtpLogger
                 var parts = new string?[] { _options.ServiceName, entry.CategoryName }
                     .Where(x => x != null);
 
-                var subject = $"[{entry.LogLevel}] {string.Join(" - ", parts)}".Trim();
-                var body = entry.Message;
-                var mail = new MailMessage(_options.From, _options.To, subject, body)
+                var mail = new MimeMessage();
+                mail.From.Add(new MailboxAddress(string.Empty, _options.From));
+                mail.To.Add(new MailboxAddress(string.Empty, _options.To));
+                mail.Subject = $"[{entry.LogLevel}] {string.Join(" - ", parts)}".Trim();
+
+                var bodyBuilder = new BodyBuilder
                 {
-                    IsBodyHtml = true
+                    HtmlBody = entry.Message
                 };
+
+                mail.Body = bodyBuilder.ToMessageBody();
 
                 client.Send(mail);
             }
@@ -72,11 +83,12 @@ namespace SmtpLogger
 
         private void ProcessLogQueue()
         {
-            using var client = new SmtpClient(_options.Host, _options.Port)
-            {
-                Credentials = new NetworkCredential(_options.Username, _options.Password),
-                EnableSsl = _options.EnableSsl
-            };
+            using var client = new SmtpClient();
+
+            client.Connect(_options.Host, _options.Port, _options.EnableSsl);
+
+            if (_options.Username != string.Empty || _options.Password != string.Empty)
+                client.Authenticate(_options.Username, _options.Password);
 
             while (TryDequeue(out LogMessageEntry message))
             {
