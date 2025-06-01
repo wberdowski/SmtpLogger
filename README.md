@@ -37,7 +37,7 @@ builder.Logging.AddSmtpLogger();
 
 ## Configuration
 
-- In appsettings.json
+### In appsettings.json
 
 ```json
 "Logging": {
@@ -58,9 +58,7 @@ builder.Logging.AddSmtpLogger();
 }
 ```
 
-or
-
-- In code
+### In code
 ```csharp
 x.AddSmtpLogger(c =>
 {
