@@ -34,3 +34,40 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddSmtpLogger();
 ```
+
+## Configuration
+
+- In appsettings.json
+
+```json
+"Logging": {
+    "LogLevel": {
+        "Default": "Information",
+        "Microsoft.AspNetCore": "Warning"
+    },
+    "SmtpLogger": {
+        "LogLevel": {
+            "Default": "Error"
+        },
+        "Host": "127.0.0.1",
+        "Port": 1025,
+        "From": "no-reply@myapplication.com",
+        "To": "admin@myapplication.com",
+        "ServiceName": "My application"
+    }
+}
+```
+
+or
+
+- In code
+```csharp
+x.AddSmtpLogger(c =>
+{
+    c.Host = "127.0.0.1";
+    c.Port = 1025;
+    c.From = "no-reply@myapplication.com";
+    c.To = "admin@myapplication.com";
+    c.ServiceName = "My application";
+});
+```
