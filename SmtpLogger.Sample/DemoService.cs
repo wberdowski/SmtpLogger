@@ -12,14 +12,22 @@ internal sealed class DemoService
 
     public void DoSomethingAndThrow()
     {
-        try
+        var task = Task.Run(async () =>
         {
-            // throw test exception
-            uint.Parse("-1");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Task failed!");
-        }
+            while (true)
+            {
+                try
+                {
+                    // throw test exception
+                    uint.Parse("-1");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Task failed!");
+                }
+
+                await Task.Delay(5000);
+            }
+        });
     }
 }

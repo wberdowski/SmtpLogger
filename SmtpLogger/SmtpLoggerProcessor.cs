@@ -5,15 +5,20 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SmtpLogger
 {
     internal class SmtpLoggerProcessor : IDisposable
     {
+        private const int MaxConnectAttempts = 3;
+        private const int BaseDelayBetweenConnectAttempts = 1000;
         private readonly SmtpLoggerOptions _options;
         private readonly Queue<LogMessageEntry> _messageQueue;
-        private bool _isAddingCompleted;
         private int _maxQueuedMessages = SmtpLoggerOptions.DefaultMaxQueueLengthValue;
+        private SmtpClient _client;
+        private bool _isConnected;
+
         public int MaxQueueLength
         {
             get => _maxQueuedMessages;
@@ -54,8 +59,19 @@ namespace SmtpLogger
             }
         }
 
-        internal void WriteMessage(SmtpClient client, LogMessageEntry entry)
+        internal void WriteMessage(LogMessageEntry entry)
         {
+            if (_client == null || !_isConnected)
+            {
+                ConnectWithRetry();
+            }
+
+            if (!_isConnected)
+            {
+                Debug.WriteLine("Failed to connect to SMTP server. Message will not be sent.");
+                return;
+            }
+
             try
             {
                 var parts = new string?[] { _options.ServiceName, entry.CategoryName }
@@ -73,26 +89,50 @@ namespace SmtpLogger
 
                 mail.Body = bodyBuilder.ToMessageBody();
 
-                client.Send(mail);
-            }
-            catch
-            {
+                _client?.Send(mail);
+                _isConnected = true;
                 CompleteAdding();
+            }
+            catch (Exception)
+            {
+                _isConnected = false;
             }
         }
 
         private void ProcessLogQueue()
         {
-            using var client = new SmtpClient();
-
-            client.Connect(_options.Host, _options.Port, _options.EnableSsl);
-
-            if (_options.Username != string.Empty || _options.Password != string.Empty)
-                client.Authenticate(_options.Username, _options.Password);
-
             while (TryDequeue(out LogMessageEntry message))
             {
-                WriteMessage(client, message);
+                WriteMessage(message);
+            }
+        }
+
+        private void ConnectWithRetry()
+        {
+            for (var attempt = 1; attempt <= MaxConnectAttempts; attempt++)
+            {
+                try
+                {
+                    _client = new SmtpClient();
+
+                    _client.Connect(_options.Host, _options.Port, _options.EnableSsl);
+
+                    if (_options.Username != string.Empty || _options.Password != string.Empty)
+                        _client.Authenticate(_options.Username, _options.Password);
+
+
+                    Debug.WriteLine($"Connected to SMTP server successfully on {attempt} attempt.");
+                    _isConnected = true;
+
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error connecting to SMTP server: {ex.Message}. Attempt: {attempt}");
+                    _isConnected = false;
+                }
+
+                Thread.Sleep(BaseDelayBetweenConnectAttempts * attempt);
             }
         }
 
@@ -100,26 +140,23 @@ namespace SmtpLogger
         {
             lock (_messageQueue)
             {
-                while (_messageQueue.Count >= MaxQueueLength && !_isAddingCompleted)
+                while (_messageQueue.Count >= MaxQueueLength)
                 {
 
                     Monitor.Wait(_messageQueue);
                 }
 
-                if (!_isAddingCompleted)
+                Debug.Assert(_messageQueue.Count < MaxQueueLength);
+                bool startedEmpty = _messageQueue.Count == 0;
+
+                _messageQueue.Enqueue(item);
+
+                if (startedEmpty)
                 {
-                    Debug.Assert(_messageQueue.Count < MaxQueueLength);
-                    bool startedEmpty = _messageQueue.Count == 0;
-
-                    _messageQueue.Enqueue(item);
-
-                    if (startedEmpty)
-                    {
-                        Monitor.PulseAll(_messageQueue);
-                    }
-
-                    return true;
+                    Monitor.PulseAll(_messageQueue);
                 }
+
+                return true;
             }
 
             return false;
@@ -129,7 +166,7 @@ namespace SmtpLogger
         {
             lock (_messageQueue)
             {
-                while (_messageQueue.Count == 0 && !_isAddingCompleted)
+                while (_messageQueue.Count == 0)
                 {
                     Monitor.Wait(_messageQueue);
                 }
@@ -156,6 +193,19 @@ namespace SmtpLogger
 
             try
             {
+                _client?.Disconnect(true);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error disconnecting from SMTP server: {ex.Message}");
+            }
+            finally
+            {
+                _client?.Dispose();
+            }
+
+            try
+            {
                 _outputThread.Join(1500);
             }
             catch (ThreadStateException) { }
@@ -165,7 +215,6 @@ namespace SmtpLogger
         {
             lock (_messageQueue)
             {
-                _isAddingCompleted = true;
                 Monitor.PulseAll(_messageQueue);
             }
         }
