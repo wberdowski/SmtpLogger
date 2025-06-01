@@ -50,7 +50,7 @@ builder.Logging.AddSmtpLogger();
             "Default": "Error"
         },
         "Host": "127.0.0.1",
-        "Port": 1025,
+        "Port": 587,
         "From": "no-reply@myapplication.com",
         "To": "admin@myapplication.com",
         "ServiceName": "My application"
@@ -65,7 +65,7 @@ or
 x.AddSmtpLogger(c =>
 {
     c.Host = "127.0.0.1";
-    c.Port = 1025;
+    c.Port = 587;
     c.From = "no-reply@myapplication.com";
     c.To = "admin@myapplication.com";
     c.ServiceName = "My application";
