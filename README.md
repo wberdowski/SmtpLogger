@@ -1,9 +1,22 @@
-# SmtpLogger
+# SmtpLogger 
+[![Nuget](https://img.shields.io/nuget/v/SmtpLogger)](https://www.nuget.org/packages/SmtpLogger)
+https://www.nuget.org/packages/SmtpLogger
+
+
+> [!WARNING] 
+> This package is in pre-release state and may change in future versions.
+
 
 SmtpLogger is a simple email logger that allows you to log messages to an SMTP server.
 It's compatible with Microsoft.Extensions.Logging
 
-[![Nuget](https://img.shields.io/nuget/v/SmtpLogger)](https://www.nuget.org/packages/SmtpLogger)
+## How to install
+
+You can install SmtpLogger via NuGet package manager:
+
+```bash
+dotnet add package SmtpLogger --prerelease
+```
 
 ## How to use
 
