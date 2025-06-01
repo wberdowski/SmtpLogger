@@ -8,7 +8,26 @@
     <AssemblyVersion>$(VersionPrefix)</AssemblyVersion>
     <FileVersion>$(VersionPrefix)</FileVersion>
     <Version>$(VersionPrefix)-$(VersionSuffix)</Version>
+    <Title>SmtpLogger</Title>
+    <Copyright>Wojciech Berdowski</Copyright>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/wberdowski/SmtpLogger</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/wberdowski/SmtpLogger</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Simple SMTP (email) logger compatible with Microsoft.Extensions.Logging.</Description>
+    <PackageTags>logger;logging;smtp;email;e-mail</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="MailKit" Version="4.12.0" />
