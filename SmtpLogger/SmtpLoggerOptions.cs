@@ -1,4 +1,6 @@
-﻿namespace SmtpLogger
+﻿using System;
+
+namespace SmtpLogger
 {
     public sealed class SmtpLoggerOptions
     {
@@ -12,6 +14,8 @@
         public string Password { get; set; } = string.Empty;
         public string? ServiceName { get; set; } = null;
         public bool EnableSsl { get; set; }
+        public int BatchLimit { get; set; } = 10;
+        public int BatchTimeoutSeconds { get; set; } = 15;
     }
 
 }

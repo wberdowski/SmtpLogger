@@ -26,7 +26,25 @@ internal sealed class DemoService
                     _logger.LogError(ex, "Task failed!");
                 }
 
-                await Task.Delay(5000);
+                await Task.Delay(3300);
+            }
+        });
+
+        var task2 = Task.Run(async () =>
+        {
+            while (true)
+            {
+                try
+                {
+                    // throw test exception
+                    var result = 0 / int.Parse("0");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Task failed!");
+                }
+
+                await Task.Delay(5700);
             }
         });
     }
