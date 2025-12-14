@@ -15,7 +15,7 @@ namespace SmtpLogger
         public string? ServiceName { get; set; } = null;
         public bool EnableSsl { get; set; }
         public int BatchLimit { get; set; } = 10;
-        public int BatchTimeoutSeconds { get; set; } = 15;
+        public int BatchTimeoutSeconds { get; set; } = 30;
     }
 
 }
