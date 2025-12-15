@@ -18,6 +18,10 @@ namespace SmtpLogger
         private int _maxQueuedMessages = SmtpLoggerOptions.DefaultMaxQueueLengthValue;
         private SmtpClient _client;
         private bool _isConnected;
+        private readonly Thread _outputThread;
+        private readonly List<LogMessageEntry> _batch = new List<LogMessageEntry>();
+        private Timer _batchTimer;
+        private readonly object _batchLock = new object();
 
         public int MaxQueueLength
         {
@@ -36,12 +40,6 @@ namespace SmtpLogger
                 }
             }
         }
-        private readonly Thread _outputThread;
-
-        // Batch fields
-        private readonly List<LogMessageEntry> _batch = new List<LogMessageEntry>();
-        private Timer _batchTimer;
-        private readonly object _batchLock = new object();
 
         public SmtpLoggerProcessor(SmtpLoggerOptions options)
         {
@@ -118,7 +116,6 @@ namespace SmtpLogger
                 bool startedEmpty = _messageQueue.Count == 0;
 
                 _messageQueue.Enqueue(item);
-                Debug.WriteLine($"[SmtpLogger] Dodano wiadomość do kolejki. Liczba wpisów w kolejce (po dodaniu): {_messageQueue.Count}");
 
                 if (startedEmpty)
                 {
@@ -149,13 +146,13 @@ namespace SmtpLogger
 
             try
             {
-                Debug.WriteLine($"[SmtpLogger] Wysyłanie e-maila z batchem. Liczba wpisów: {batch.Count}");
+                Debug.WriteLine($"[SmtpLogger] Sending email with batch. Number of entries: {batch.Count}");
                 var mail = new MimeMessage();
                 mail.From.Add(new MailboxAddress(string.Empty, _options.From));
                 mail.To.Add(new MailboxAddress(string.Empty, _options.To));
                 mail.Subject = $"[Batch] {_options.ServiceName}";
 
-                // Grupowanie identycznych wpisów
+                // Grouping identical entries
                 var grouped = batch
                     .GroupBy(e => e.Message)
                     .Select(g => g.Count() == 1
@@ -190,16 +187,16 @@ namespace SmtpLogger
                 lock (_batchLock)
                 {
                     _batch.Add(message);
-                    Debug.WriteLine($"[SmtpLogger] Dodano wpis do batcha. Liczba wpisów w batchu: {_batch.Count}");
+                    Debug.WriteLine("[SmtpLogger] Added entry to batch. Number of entries in batch: " + _batch.Count);
                     if (_batch.Count == 1)
                     {
-                        Debug.WriteLine($"[SmtpLogger] Startuję timer batchowania na {_options.BatchTimeoutSeconds} sekund.");
+                        Debug.WriteLine("[SmtpLogger] Starting batch timer for " + _options.BatchTimeoutSeconds + " seconds.");
                         _batchTimer?.Dispose();
                         _batchTimer = new Timer(BatchTimeoutCallback, null, _options.BatchTimeoutSeconds * 1000, Timeout.Infinite);
                     }
                     if (_batch.Count >= _options.BatchLimit)
                     {
-                        Debug.WriteLine("[SmtpLogger] Osiągnięto BatchLimit, resetuję timer i wysyłam batch.");
+                        Debug.WriteLine("[SmtpLogger] BatchLimit reached, resetting timer and sending batch.");
                         _batchTimer?.Dispose();
                         SendAndClearBatch();
                     }
@@ -211,7 +208,7 @@ namespace SmtpLogger
         {
             lock (_batchLock)
             {
-                Debug.WriteLine("[SmtpLogger] Upłynął czas batchowania, wysyłam batch i resetuję timer.");
+                Debug.WriteLine("[SmtpLogger] Batch timeout elapsed, sending batch and resetting timer.");
                 SendAndClearBatch();
             }
         }
@@ -269,7 +266,6 @@ namespace SmtpLogger
                 if (_messageQueue.Count > 0)
                 {
                     item = _messageQueue.Dequeue();
-                    Debug.WriteLine($"[SmtpLogger] Pobrano wiadomość z kolejki. Liczba wpisów w kolejce (po pobraniu): {_messageQueue.Count}");
                     if (_messageQueue.Count == MaxQueueLength - 1)
                     {
                         Monitor.PulseAll(_messageQueue);

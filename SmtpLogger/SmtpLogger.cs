@@ -38,7 +38,7 @@ namespace SmtpLogger
 
             var sb = _writer.GetStringBuilder();
 
-            if (sb.Length == 0)
+            if (sb is null || sb.Length == 0)
             {
                 return;
             }
